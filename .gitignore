@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.pkl
+.env
+terraform/.terraform/
+terraform/*.tfstate*
+*.retry
+.DS_Store
