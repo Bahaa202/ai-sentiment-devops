@@ -7,3 +7,5 @@ terraform/.terraform/
 terraform/*.tfstate*
 *.retry
 .DS_Store
+*.pem
+terraform/*.pem
