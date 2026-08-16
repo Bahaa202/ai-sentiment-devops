@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sentiment-app
+  labels:
+    app: sentiment-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sentiment-app
+  template:
+    metadata:
+      labels:
+        app: sentiment-app
+    spec:
+      containers:
+        - name: sentiment-app
+          image: localhost/sentiment-app:v1
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 5000
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 3
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 5
+            periodSeconds: 10
