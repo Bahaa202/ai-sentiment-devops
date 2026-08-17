@@ -1,0 +1,7 @@
+---
+- name: Setup AI Sentiment App Server
+  hosts: app_servers
+  gather_facts: true
+
+  roles:
+    - podman
