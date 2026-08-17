@@ -45,6 +45,7 @@
 - name: Run the sentiment-app container
   ansible.builtin.command: >
     podman run -d --name sentiment-app
+    --network sentiment-net
     -p 127.0.0.1:5000:5000
     --restart=always
     localhost/sentiment-app:v1

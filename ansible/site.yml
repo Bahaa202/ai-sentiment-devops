@@ -6,3 +6,4 @@
   roles:
     - podman
     - deploy_app
+    - monitoring

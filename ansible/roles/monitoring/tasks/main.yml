@@ -1,0 +1,63 @@
+---
+- name: Create monitoring config directory on remote server
+  ansible.builtin.file:
+    path: /home/ec2-user/monitoring
+    state: directory
+    mode: "0755"
+
+- name: Copy prometheus.yml configuration
+  ansible.builtin.copy:
+    src: prometheus.yml
+    dest: /home/ec2-user/monitoring/prometheus.yml
+    mode: "0644"
+
+# ----------------------------
+# Prometheus
+# ----------------------------
+- name: Stop existing Prometheus container (ignore if not found)
+  ansible.builtin.command: podman stop prometheus
+  register: stop_prom
+  failed_when: false
+  changed_when: stop_prom.rc == 0
+
+- name: Remove existing Prometheus container (ignore if not found)
+  ansible.builtin.command: podman rm prometheus
+  register: rm_prom
+  failed_when: false
+  changed_when: rm_prom.rc == 0
+
+- name: Run Prometheus container
+  ansible.builtin.command: >
+    podman run -d --name prometheus
+    --network sentiment-net
+    -p 127.0.0.1:9090:9090
+    --restart=always
+    -v /home/ec2-user/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:Z
+    docker.io/prom/prometheus
+  register: run_prom
+  changed_when: true
+
+# ----------------------------
+# Grafana
+# ----------------------------
+- name: Stop existing Grafana container (ignore if not found)
+  ansible.builtin.command: podman stop grafana
+  register: stop_grafana
+  failed_when: false
+  changed_when: stop_grafana.rc == 0
+
+- name: Remove existing Grafana container (ignore if not found)
+  ansible.builtin.command: podman rm grafana
+  register: rm_grafana
+  failed_when: false
+  changed_when: rm_grafana.rc == 0
+
+- name: Run Grafana container
+  ansible.builtin.command: >
+    podman run -d --name grafana
+    --network sentiment-net
+    -p 127.0.0.1:3000:3000
+    --restart=always
+    docker.io/grafana/grafana
+  register: run_grafana
+  changed_when: true

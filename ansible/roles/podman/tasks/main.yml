@@ -1,4 +1,9 @@
 ---
+- name: Enable linger for ec2-user (keeps rootless containers running after SSH disconnects)
+  ansible.builtin.command: loginctl enable-linger ec2-user
+  become: true
+  changed_when: true
+
 - name: Enable SPAL repository (required for Podman on AL2023)
   ansible.builtin.dnf:
     name: spal-release
