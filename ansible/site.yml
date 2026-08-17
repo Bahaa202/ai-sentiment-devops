@@ -5,3 +5,4 @@
 
   roles:
     - podman
+    - deploy_app

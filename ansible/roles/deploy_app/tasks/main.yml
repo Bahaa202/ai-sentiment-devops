@@ -1,0 +1,52 @@
+---
+- name: Create app directory on remote server
+  ansible.builtin.file:
+    path: /home/ec2-user/ai-sentiment-devops
+    state: directory
+    mode: "0755"
+
+- name: Copy Containerfile
+  ansible.builtin.copy:
+    src: Containerfile
+    dest: /home/ec2-user/ai-sentiment-devops/Containerfile
+    mode: "0644"
+
+- name: Copy requirements.txt
+  ansible.builtin.copy:
+    src: requirements.txt
+    dest: /home/ec2-user/ai-sentiment-devops/requirements.txt
+    mode: "0644"
+
+- name: Copy app directory (Flask app + model)
+  ansible.builtin.copy:
+    src: app/
+    dest: /home/ec2-user/ai-sentiment-devops/app/
+    mode: "0644"
+
+- name: Build the container image on the server
+  ansible.builtin.command:
+    cmd: podman build -t sentiment-app:v1 -f Containerfile .
+    chdir: /home/ec2-user/ai-sentiment-devops
+  register: build_result
+  changed_when: "'Successfully tagged' in build_result.stdout"
+
+- name: Stop existing container if running (ignore errors if not found)
+  ansible.builtin.command: podman stop sentiment-app
+  register: stop_result
+  failed_when: false
+  changed_when: stop_result.rc == 0
+
+- name: Remove existing container if present (ignore errors if not found)
+  ansible.builtin.command: podman rm sentiment-app
+  register: rm_result
+  failed_when: false
+  changed_when: rm_result.rc == 0
+
+- name: Run the sentiment-app container
+  ansible.builtin.command: >
+    podman run -d --name sentiment-app
+    -p 127.0.0.1:5000:5000
+    --restart=always
+    localhost/sentiment-app:v1
+  register: run_result
+  changed_when: true
